@@ -1,0 +1,76 @@
+---
+# tasks file for ansible_bind
+- name: Install bind9 packages
+  tags:
+    - install
+  ansible.builtin.apt:
+    state: present
+    pkg: "{{ bind_packages }}"
+
+- name: Generate named.conf
+  tags:
+    - configuration
+  notify: restart-bind
+  ansible.builtin.template:
+    src: named.conf.j2
+    dest: /etc/bind/named.conf
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0644'
+
+- name: Generate named.conf.options
+  tags:
+    - configuration
+  notify: restart-bind
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0644'
+
+- name: Generate named.conf.local
+  tags:
+    - configuration
+  notify: restart-bind
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0644'
+
+- name: Upload zone files
+  tags:
+    - configuration
+  when: bind_zone_files is defined
+  notify: restart-bind
+  loop: "{{ bind_zone_files }}"
+  ansible.builtin.copy:
+    src: "{{ item.source }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0644'
+
+- name: Create default log directory (as defined by apparmor policy)
+  tags:
+    - logs
+  ansible.builtin.file:
+    path: /var/log/named
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0775'
+    state: directory
+
+- name: Create log files
+  tags:
+    - logs
+  when: bind_log_files is defined
+  loop: "{{ bind_log_files }}"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    mode: '0664'
+    state: touch

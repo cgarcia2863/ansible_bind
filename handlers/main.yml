@@ -1,0 +1,7 @@
+---
+# handlers file for ansible_bind
+- name: Restart bind9
+  listen: restart-bind
+  ansible.builtin.service:
+    name: bind9
+    state: restarted

@@ -1,0 +1,48 @@
+// This file is managed by Ansible
+
+{% if bind_acls is defined %}
+{% for key, values in bind_acls.items() %}
+acl "{{ key }}" {
+{% for item in values %}
+  {{ item }};
+{% endfor %}
+};
+{% endfor %}
+{% endif %}
+
+options {
+{% for key, properties in bind_options.items() %}
+{%if properties is string or properties is number %}
+  {{ key }} {{ properties }};
+{% else %}
+  {{ key }} {
+{% for item in properties %}
+    {{ item }};
+{% endfor %}
+  };
+
+{% endif %}
+{% endfor %}
+};
+
+{% if bind_logging is defined and bind_logging.channels is defined and bind_logging.categories is defined%}
+logging {
+{% for channel, properties in bind_logging.channels.items() %}
+  channel {{ channel }} {
+{% for key, value in properties.items() %}
+    {{ key }} {{ value }};
+{% endfor %}
+  };
+
+{% endfor %}
+
+{% for category, properties in bind_logging.categories.items() %}
+  category {{ category }} {
+{% for item in properties %}
+    {{ item }};
+{% endfor %}
+  };
+
+{% endfor %}
+};
+{% endif %}

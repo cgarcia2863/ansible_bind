@@ -1,0 +1,38 @@
+// This file is managed by Ansible
+
+{% if bind_local_config is defined and bind_local_config.config is defined %}
+{% for key, properties in bind_local_config.config.items() %}
+{{ key }} {
+{% for key, value in properties.items() %}
+{% if value is string or value is number %}
+  {{ key }} {{ value }};
+{% else %}
+{% for item in value %}
+  {{ key }} {
+    {{ item }};
+  };
+{% endfor %}
+{% endif %}
+{% endfor %}
+};
+{% endfor %}
+{% endif %}
+
+{% if bind_local_config is defined and bind_local_config.zones is defined %}
+{% for zone, properties in bind_local_config.zones.items() %}
+zone "{{ zone }}" {
+{% for key, value in properties.items() %}
+{% if value is string or value is number %}
+  {{ key }} {{ value }};
+{% else %}
+{% for item in value %}
+  {{ key }} {
+    {{ item }};
+  };
+{% endfor %}
+{% endif %}
+{% endfor %}
+};
+
+{% endfor %}
+{% endif %}
